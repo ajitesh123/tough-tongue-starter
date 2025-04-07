@@ -14,11 +14,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { processCourseToScenario } from "@/app/utils/tough-tongue";
+import { saveCourses } from "@/app/utils/courses";
 
 export interface Course {
   id: string;
   title: string;
   description: string;
+  scenarioId?: string;
+  embedUrl?: string;
 }
 
 interface CourseDialogProps {
@@ -84,16 +88,59 @@ export default function CourseDialog({
   onSubmit,
 }: CourseDialogProps) {
   const [editedCourses, setEditedCourses] = useState<Course[]>(courses);
+  const [processingScenarios, setProcessingScenarios] = useState(false);
+  const [processingProgress, setProcessingProgress] = useState(0);
 
   // Update local state when courses prop changes
   useEffect(() => {
     setEditedCourses(courses);
   }, [courses]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(editedCourses);
-    onOpenChange(false);
+    
+    try {
+      setProcessingScenarios(true);
+      
+      // Process each course to create ToughTongue scenarios
+      const processedCourses: Course[] = [];
+      const totalCourses = editedCourses.length;
+      
+      for (let i = 0; i < editedCourses.length; i++) {
+        const course = editedCourses[i];
+        try {
+          // Only process course if it doesn't already have a scenarioId
+          if (!course.scenarioId) {
+            const processedCourse = await processCourseToScenario(course);
+            processedCourses.push(processedCourse);
+          } else {
+            processedCourses.push(course);
+          }
+        } catch (error) {
+          console.error(`Error processing course ${course.id}:`, error);
+          // Add the original course if processing fails
+          processedCourses.push(course);
+        }
+        
+        // Update progress
+        setProcessingProgress(Math.round(((i + 1) / totalCourses) * 100));
+      }
+      
+      // Save processed courses to localStorage
+      saveCourses(processedCourses);
+      
+      // Pass processed courses to parent component
+      onSubmit(processedCourses);
+      onOpenChange(false);
+    } catch (error) {
+      console.error('Error processing courses:', error);
+      // Submit original edited courses if processing fails
+      onSubmit(editedCourses);
+      onOpenChange(false);
+    } finally {
+      setProcessingScenarios(false);
+      setProcessingProgress(0);
+    }
   };
 
   const handleCourseChange = (index: number, field: 'title' | 'description', value: string) => {
@@ -116,8 +163,16 @@ export default function CourseDialog({
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 py-2">
-            {isLoading ? (
-              <LoadingIndicator />
+            {isLoading || processingScenarios ? (
+              <div className="flex flex-col items-center justify-center p-8 my-4">
+                <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary"></div>
+                <p className="mt-6 text-base text-gray-600 dark:text-gray-300 font-medium">
+                  {isLoading ? 'Generating course suggestions...' : `Processing courses (${processingProgress}%)...`}
+                </p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                  {isLoading ? 'This may take a few moments' : 'Creating interactive scenarios for your courses'}
+                </p>
+              </div>
             ) : (
               editedCourses.map((course, index) => (
                 <CourseCard 
@@ -131,7 +186,7 @@ export default function CourseDialog({
           </div>
           <DialogFooter className="pt-4 flex justify-end gap-2">
             <Button variant="outline" onClick={() => onOpenChange(false)} size="lg" className="rounded-full">Cancel</Button>
-            <Button type="submit" disabled={isLoading} size="lg" className="rounded-full">Continue</Button>
+            <Button type="submit" disabled={isLoading || processingScenarios} size="lg" className="rounded-full">Continue</Button>
           </DialogFooter>
         </form>
       </DialogContent>
