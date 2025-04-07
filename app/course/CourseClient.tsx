@@ -13,7 +13,8 @@ import {
 import { MediaEmbed } from "@/components/MediaEmbed";
 import { cn } from "@/lib/utils";
 import { CourseSidebar } from "@/components/course/CourseSidebar";
-import { getSavedCourses, Course as CourseType } from "@/app/utils/courses";
+import { getSavedCourses } from "@/app/store/localStorageUtils";
+import { Course as CourseType } from "@/app/utils/courses";
 
 type MediaEmbedType = "loom" | "youtube" | "iframe" | "toughtongue" | "placeholder";
 

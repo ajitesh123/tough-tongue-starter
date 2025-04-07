@@ -68,48 +68,4 @@ export async function fetchCourseSuggestions(profession: string): Promise<Course
   }
 }
 
-// Storage key for courses in localStorage
-const COURSES_STORAGE_KEY = 'tough_tongue_courses';
-
-/**
- * Save courses to localStorage
- * @param courses Array of courses to save
- */
-export function saveCourses(courses: Course[]): void {
-  if (typeof window !== 'undefined') {
-    localStorage.setItem(COURSES_STORAGE_KEY, JSON.stringify(courses));
-  }
-}
-
-/**
- * Retrieve saved courses from localStorage
- * @returns Array of saved courses or null if none exist
- */
-export function getSavedCourses(): Course[] | null {
-  if (typeof window !== 'undefined') {
-    const savedCourses = localStorage.getItem(COURSES_STORAGE_KEY);
-    return savedCourses ? JSON.parse(savedCourses) : null;
-  }
-  return null;
-}
-
-/**
- * Update a specific course in the saved courses
- * @param courseId ID of the course to update
- * @param courseData Updated course data
- * @returns Boolean indicating success
- */
-export function updateSavedCourse(courseId: string, courseData: Partial<Course>): boolean {
-  if (typeof window !== 'undefined') {
-    const courses = getSavedCourses();
-    if (!courses) return false;
-    
-    const updatedCourses = courses.map(course => 
-      course.id === courseId ? { ...course, ...courseData } : course
-    );
-    
-    saveCourses(updatedCourses);
-    return true;
-  }
-  return false;
-} 
+// Storage functionality has been moved to app/utils/storage.ts 
