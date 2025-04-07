@@ -15,7 +15,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { processCourseToScenario } from "@/app/utils/tough-tongue";
-import { saveCourses } from "@/app/store/localStorageUtils";
+import { saveCourses, getSavedCourses } from "@/app/store/localStorageUtils";
+import { useRouter } from "next/navigation";
 
 export interface Course {
   id: string;
@@ -158,6 +159,8 @@ export default function CourseDialog({
   const [editedCourses, setEditedCourses] = useState<Course[]>(courses);
   const [processingScenarios, setProcessingScenarios] = useState(false);
   const [processingProgress, setProcessingProgress] = useState(0);
+  const [currentCourseIndex, setCurrentCourseIndex] = useState(0);
+  const router = useRouter();
 
   // Update local state when courses prop changes
   useEffect(() => {
@@ -171,43 +174,84 @@ export default function CourseDialog({
       setProcessingScenarios(true);
       
       // Process each course to create ToughTongue scenarios
-      const processedCourses: Course[] = [];
       const totalCourses = editedCourses.length;
       
+      // Initialize processing status in sessionStorage
+      const initialStatus = {
+        inProgress: true,
+        progress: 0,
+        total: totalCourses,
+        completed: 0
+      };
+      sessionStorage.setItem('courseProcessingStatus', JSON.stringify(initialStatus));
+      
+      // Start with any existing saved courses
+      let processedCourses = getSavedCourses() || [];
+      
       for (let i = 0; i < editedCourses.length; i++) {
+        setCurrentCourseIndex(i);
         const course = editedCourses[i];
+        
         try {
           // Only process course if it doesn't already have a scenarioId
           if (!course.scenarioId) {
             const processedCourse = await processCourseToScenario(course);
-            processedCourses.push(processedCourse);
+            
+            // Add the newly processed course
+            processedCourses = [...processedCourses, processedCourse];
+            
+            // Save the updated list after each successful processing
+            saveCourses(processedCourses);
+            
+            // If this is our first processed course, redirect to the course page
+            if (i === 0) {
+              // Continue processing in the background, but redirect the user
+              router.push("/course");
+            }
           } else {
-            processedCourses.push(course);
+            // Just add the existing course with scenario
+            processedCourses = [...processedCourses, course];
+            saveCourses(processedCourses);
           }
         } catch (error) {
           console.error(`Error processing course ${course.id}:`, error);
           // Add the original course if processing fails
-          processedCourses.push(course);
+          processedCourses = [...processedCourses, course];
+          saveCourses(processedCourses);
         }
         
         // Update progress
-        setProcessingProgress(Math.round(((i + 1) / totalCourses) * 100));
+        const progressPercent = Math.round(((i + 1) / totalCourses) * 100);
+        setProcessingProgress(progressPercent);
+        
+        // Update processing status in sessionStorage
+        const updatedStatus = {
+          inProgress: i + 1 < totalCourses, // Still in progress if not on the last course
+          progress: progressPercent,
+          total: totalCourses,
+          completed: i + 1
+        };
+        sessionStorage.setItem('courseProcessingStatus', JSON.stringify(updatedStatus));
       }
       
-      // Save processed courses to localStorage
-      saveCourses(processedCourses);
-      
-      // Pass processed courses to parent component
+      // All done - call the onSubmit callback
       onSubmit(processedCourses);
       onOpenChange(false);
+      
+      // Make sure we're on the course page when finished
+      router.push("/course");
     } catch (error) {
       console.error('Error processing courses:', error);
       // Submit original edited courses if processing fails
       onSubmit(editedCourses);
       onOpenChange(false);
+      
+      // Clear processing status on error
+      sessionStorage.removeItem('courseProcessingStatus');
     } finally {
       setProcessingScenarios(false);
       setProcessingProgress(0);
+      setCurrentCourseIndex(0);
     }
   };
 
@@ -225,6 +269,30 @@ export default function CourseDialog({
       <DialogContent className="sm:max-w-xl max-h-[90vh] overflow-y-auto border border-black/10 dark:border-white/20">
         <DialogHeaderContent />
         <form onSubmit={handleSubmit}>
+          {processingScenarios && processingProgress > 0 && (
+            <div className="mb-4 px-2">
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                {processingProgress > 0 && processingProgress < 100 
+                  ? `Processing course: ${editedCourses[currentCourseIndex]?.title || 'Course'}`
+                  : 'Processing complete!'
+                }
+              </p>
+              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 mt-2">
+                <div 
+                  className="bg-primary h-2.5 rounded-full transition-all duration-300 ease-in-out" 
+                  style={{ width: `${processingProgress}%` }}
+                ></div>
+              </div>
+              {processingProgress > 0 && (
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  {processingProgress === 100 
+                    ? 'Finishing up...' 
+                    : `${processingProgress}% complete. You'll be redirected to the course page when the first scenario is ready.`
+                  }
+                </p>
+              )}
+            </div>
+          )}
           <CourseList
             isLoading={isLoading}
             processingScenarios={processingScenarios}

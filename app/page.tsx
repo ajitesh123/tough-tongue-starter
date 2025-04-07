@@ -171,8 +171,8 @@ export default function Home() {
     setSelectedCourses(editedCourses);
     console.log('Courses submitted with edits:', editedCourses);
     
-    // Navigate to next step in the course creation flow
-    window.location.href = "/course";
+    // Note: The redirect to the course page is now handled in the CourseDialog component
+    // No need to navigate here as the dialog will handle it
   };
 
   return (

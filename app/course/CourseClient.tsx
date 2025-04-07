@@ -165,25 +165,197 @@ const CourseContent = ({
   );
 };
 
+// Processing notification component
+const BackgroundProcessingNotification = ({ 
+  isProcessing, 
+  progress, 
+  totalCourses, 
+  completedCourses,
+  onDismiss
+}: { 
+  isProcessing: boolean; 
+  progress: number;
+  totalCourses: number;
+  completedCourses: number;
+  onDismiss: () => void;
+}) => {
+  if (!isProcessing) return null;
+  
+  return (
+    <div className="fixed bottom-4 left-0 right-0 flex justify-center z-50 pointer-events-none">
+      <div className="bg-black/80 dark:bg-white/20 backdrop-blur-sm text-white rounded-lg p-4 shadow-lg pointer-events-auto max-w-md">
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+              <span className="font-medium">Processing your courses</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm">{completedCourses} of {totalCourses}</span>
+              <button 
+                onClick={onDismiss}
+                className="text-white/70 hover:text-white focus:outline-none"
+                aria-label="Dismiss notification"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+          
+          <div className="w-full bg-gray-700 rounded-full h-1.5">
+            <div 
+              className="bg-primary h-1.5 rounded-full transition-all duration-300 ease-in-out" 
+              style={{ width: `${progress}%` }}
+            ></div>
+          </div>
+          
+          <p className="text-xs text-gray-300">
+            {progress < 100 
+              ? "Your additional courses are being created in the background" 
+              : "Processing complete! All your courses are ready."}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export default function CourseClient() {
   const [courseData, setCourseData] = useState<Course | null>(null);
   const [activeLesson, setActiveLesson] = useState<string | null>(null);
   const [showSidebar, setShowSidebar] = useState(false);
+  const [isLoadingMoreCourses, setIsLoadingMoreCourses] = useState(false);
+  const [backgroundProcessing, setBackgroundProcessing] = useState(false);
+  const [processingProgress, setProcessingProgress] = useState(0);
+  const [totalCoursesToProcess, setTotalCoursesToProcess] = useState(0);
+  const [completedCourses, setCompletedCourses] = useState(0);
   
-  // Load courses from localStorage on component mount
+  // Load processing status from sessionStorage on mount
   useEffect(() => {
+    const processingStatus = sessionStorage.getItem('courseProcessingStatus');
+    if (processingStatus) {
+      try {
+        const { inProgress, progress, total, completed } = JSON.parse(processingStatus);
+        setBackgroundProcessing(inProgress);
+        setProcessingProgress(progress);
+        setTotalCoursesToProcess(total);
+        setCompletedCourses(completed);
+      } catch (error) {
+        console.error('Error parsing processing status:', error);
+        sessionStorage.removeItem('courseProcessingStatus');
+      }
+    }
+  }, []);
+  
+  // Load courses from localStorage on component mount and poll for updates
+  useEffect(() => {
+    // Initial load
+    loadCoursesFromStorage();
+    
+    // Set up polling for new course data and processing status
+    const intervalId = setInterval(() => {
+      // Check for new courses
+      const currentCourses = getSavedCourses();
+      const currentCoursesCount = courseData?.lessons.length || 0;
+      
+      // Check for processing status updates
+      const processingStatus = sessionStorage.getItem('courseProcessingStatus');
+      if (processingStatus) {
+        try {
+          const { inProgress, progress, total, completed } = JSON.parse(processingStatus);
+          
+          // Only update if values have changed
+          if (inProgress !== backgroundProcessing) {
+            setBackgroundProcessing(inProgress);
+          }
+          
+          if (progress !== processingProgress) {
+            setProcessingProgress(progress);
+          }
+          
+          if (total !== totalCoursesToProcess) {
+            setTotalCoursesToProcess(total);
+          }
+          
+          if (completed !== completedCourses) {
+            setCompletedCourses(completed);
+          }
+        } catch (error) {
+          console.error('Error parsing processing status:', error);
+        }
+      }
+      
+      if (currentCourses) {
+        // If we have more courses now than before, update the course data
+        if (currentCourses.length > currentCoursesCount) {
+          setIsLoadingMoreCourses(true);
+          loadCoursesFromStorage();
+        }
+      }
+    }, 1000); // Check every second for more responsive updates
+    
+    return () => clearInterval(intervalId);
+  }, [
+    courseData?.lessons.length, 
+    totalCoursesToProcess, 
+    backgroundProcessing,
+    processingProgress,
+    completedCourses
+  ]);
+  
+  // Function to handle completion of processing
+  const handleProcessingComplete = () => {
+    // Set a timeout to remove the notification
+    setTimeout(() => {
+      setBackgroundProcessing(false);
+      sessionStorage.removeItem('courseProcessingStatus');
+    }, 3000); // Keep the complete message visible for 3 seconds
+  };
+  
+  // Check if processing is complete when the progress changes
+  useEffect(() => {
+    if (processingProgress >= 100 && backgroundProcessing) {
+      handleProcessingComplete();
+    }
+  }, [processingProgress, backgroundProcessing]);
+  
+  // Load courses from localStorage
+  const loadCoursesFromStorage = () => {
     const savedCourses = getSavedCourses();
     const generatedCourse = createLessonsFromCourses(savedCourses);
     setCourseData(generatedCourse);
     
-    // Set active lesson to first lesson if available
-    if (generatedCourse.lessons.length > 0) {
+    // Set active lesson to first lesson if available and we don't have one selected
+    if (generatedCourse.lessons.length > 0 && !activeLesson) {
       setActiveLesson(generatedCourse.lessons[0].id);
     }
-  }, []);
+    
+    // Check if all courses are processed
+    const processingStatus = sessionStorage.getItem('courseProcessingStatus');
+    if (processingStatus) {
+      try {
+        const { total, completed } = JSON.parse(processingStatus);
+        if (completed >= total) {
+          // All courses are processed, update status to complete
+          const updatedStatus = {
+            inProgress: false,
+            progress: 100,
+            total,
+            completed
+          };
+          sessionStorage.setItem('courseProcessingStatus', JSON.stringify(updatedStatus));
+          handleProcessingComplete();
+        }
+      } catch (error) {
+        console.error('Error checking processing status:', error);
+      }
+    }
+    
+    setIsLoadingMoreCourses(false);
+  };
   
   // Handle case where courseData is still loading
-  if (!courseData || !activeLesson) {
+  if (!courseData) {
     return (
       <div className="flex items-center justify-center h-[calc(100vh-64px)]">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
@@ -191,8 +363,18 @@ export default function CourseClient() {
     );
   }
   
-  const currentLesson = courseData.lessons.find(l => l.id === activeLesson) || courseData.lessons[0];
-  const currentIndex = courseData.lessons.findIndex(l => l.id === activeLesson);
+  // Make sure we always have an active lesson if there are lessons available
+  if (courseData.lessons.length > 0 && !activeLesson) {
+    setActiveLesson(courseData.lessons[0].id);
+  }
+  
+  const currentLesson = activeLesson 
+    ? courseData.lessons.find(l => l.id === activeLesson) 
+    : courseData.lessons[0] || null;
+  
+  const currentIndex = activeLesson 
+    ? courseData.lessons.findIndex(l => l.id === activeLesson)
+    : 0;
   
   const handlePrevious = () => {
     if (currentIndex > 0) {
@@ -230,19 +412,50 @@ export default function CourseClient() {
       )}>
         <CourseSidebar 
           course={courseData}
-          activeLesson={activeLesson}
+          activeLesson={activeLesson || ''}
           setActiveLesson={(id) => {
             setActiveLesson(id);
             setShowSidebar(false); // Close sidebar on mobile when lesson is selected
           }}
         />
+        
+        {isLoadingMoreCourses && (
+          <div className="absolute bottom-4 left-0 right-0 flex justify-center">
+            <div className="bg-primary/10 text-primary text-sm rounded-full px-4 py-2 flex items-center gap-2">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+              <span>Loading more courses...</span>
+            </div>
+          </div>
+        )}
       </div>
       
       {/* Content */}
-      <CourseContent 
-        lesson={currentLesson} 
-        onPrevious={handlePrevious}
-        onNext={handleNext}
+      {currentLesson ? (
+        <CourseContent 
+          lesson={currentLesson} 
+          onPrevious={handlePrevious}
+          onNext={handleNext}
+        />
+      ) : (
+        <div className="flex-1 overflow-auto p-6 flex items-center justify-center">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold mb-4">Select a course to begin</h2>
+            <p className="text-muted-foreground">Choose a course from the sidebar to get started</p>
+          </div>
+        </div>
+      )}
+      
+      {/* Background processing notification */}
+      <BackgroundProcessingNotification 
+        isProcessing={backgroundProcessing}
+        progress={processingProgress}
+        totalCourses={totalCoursesToProcess}
+        completedCourses={completedCourses}
+        onDismiss={() => {
+          setBackgroundProcessing(false);
+          // Keep the status in sessionStorage in case we need it later,
+          // but hide the notification for the user
+        }}
       />
     </div>
   );
