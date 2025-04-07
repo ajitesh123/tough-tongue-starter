@@ -8,6 +8,8 @@ import { FeatureCard } from "../components/FeatureCard";
 import { useState, useEffect } from "react";
 import { useUser } from "@clerk/nextjs";
 import ProfessionDialog from "@/components/ProfessionDialog";
+import CourseDialog, { Course } from "@/components/CourseDialog";
+import { fetchCourseSuggestions } from "@/app/utils/courses";
 
 // Header component
 const Header = () => {
@@ -134,18 +136,39 @@ const Footer = () => {
 };
 
 export default function Home() {
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [professionDialogOpen, setProfessionDialogOpen] = useState(false);
+  const [courseDialogOpen, setCourseDialogOpen] = useState(false);
   const { user, isLoaded } = useUser();
   const [profession, setProfession] = useState<string | null>(null);
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [isLoadingCourses, setIsLoadingCourses] = useState(false);
 
   const handleGetStarted = () => {
-    setDialogOpen(true);
+    setProfessionDialogOpen(true);
   };
 
-  const handleProfessionSubmit = (profession: string) => {
+  const handleProfessionSubmit = async (profession: string) => {
     setProfession(profession);
-    // In the future, we would store this in a database or make API calls
-    console.log(`User profession: ${profession}`);
+    setProfessionDialogOpen(false);
+    
+    // Start loading courses
+    setIsLoadingCourses(true);
+    setCourseDialogOpen(true);
+    
+    try {
+      const courseSuggestions = await fetchCourseSuggestions(profession);
+      setCourses(courseSuggestions);
+    } catch (error) {
+      console.error('Error fetching course suggestions:', error);
+    } finally {
+      setIsLoadingCourses(false);
+    }
+  };
+
+  const handleCoursesSubmit = (editedCourses: Course[]) => {
+    // In the future, we would save these courses to a database
+    console.log('Courses submitted:', editedCourses);
+    
     // Navigate to next step in the course creation flow
     window.location.href = "/course";
   };
@@ -159,9 +182,17 @@ export default function Home() {
       <Footer />
       
       <ProfessionDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
+        open={professionDialogOpen}
+        onOpenChange={setProfessionDialogOpen}
         onSubmit={handleProfessionSubmit}
+      />
+      
+      <CourseDialog
+        open={courseDialogOpen}
+        onOpenChange={setCourseDialogOpen}
+        courses={courses}
+        isLoading={isLoadingCourses}
+        onSubmit={handleCoursesSubmit}
       />
     </div>
   );
