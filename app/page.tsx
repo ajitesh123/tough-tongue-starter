@@ -1,8 +1,13 @@
+"use client";
+
 import Image from "next/image";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Sparkles, MessageSquare, Clock, FileText, LayoutPanelTop, Globe } from "lucide-react";
 import { FeatureCard } from "../components/FeatureCard";
+import { useState, useEffect } from "react";
+import { useUser } from "@clerk/nextjs";
+import ProfessionDialog from "@/components/ProfessionDialog";
 
 // Header component
 const Header = () => {
@@ -69,15 +74,15 @@ const CourseModules = () => {
 };
 
 // CTA buttons component
-const CTAButtons = () => {
+const CTAButtons = ({ onGetStarted }: { onGetStarted: () => void }) => {
   return (
     <div className="flex gap-4 items-center flex-col sm:flex-row mt-6">
       <Button 
         variant="default" 
-        asChild 
+        onClick={onGetStarted}
         className="rounded-full bg-foreground text-background hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
       >
-        <a href="/course">Create Your Scenarios</a>
+        Create Your Scenarios
       </Button>
       <Button 
         variant="outline" 
@@ -129,15 +134,35 @@ const Footer = () => {
 };
 
 export default function Home() {
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const { user, isLoaded } = useUser();
+  const [profession, setProfession] = useState<string | null>(null);
+
+  const handleGetStarted = () => {
+    setDialogOpen(true);
+  };
+
+  const handleProfessionSubmit = (profession: string) => {
+    setProfession(profession);
+    // In the future, we would store this in a database or make API calls
+    console.log(`User profession: ${profession}`);
+    // Navigate to next step in the course creation flow
+    window.location.href = "/course";
+  };
+
   return (
     <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-4 pb-12 gap-4 sm:p-12 font-[family-name:var(--font-geist-sans)]">
       <main className="flex flex-col gap-6 row-start-2 items-center sm:items-start">
-        <Header />
-        <BenefitsGrid />
         <CourseModules />
-        <CTAButtons />
+        <CTAButtons onGetStarted={handleGetStarted} />
       </main>
       <Footer />
+      
+      <ProfessionDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        onSubmit={handleProfessionSubmit}
+      />
     </div>
   );
 }
