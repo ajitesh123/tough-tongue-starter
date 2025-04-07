@@ -48,23 +48,27 @@ interface CourseCardProps {
 const CourseCard = ({ course, index, onChange }: CourseCardProps) => (
   <div className="bg-white dark:bg-black border border-black/30 dark:border-white/20 rounded-lg p-6 space-y-4">
     <div className="space-y-2">
-      <div className="text-sm text-gray-600 dark:text-gray-400">Course Title</div>
+      <Label htmlFor={`course-title-${index}`} className="text-sm font-medium text-gray-700 dark:text-gray-300">
+        Course Title
+      </Label>
       <Input
         id={`course-title-${index}`}
         value={course.title}
         onChange={(e) => onChange(index, 'title', e.target.value)}
-        className="font-medium text-base border-0 shadow-none bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 px-0 h-auto"
+        className="font-medium text-base border border-gray-300 dark:border-gray-700 focus-visible:ring-2 focus-visible:ring-offset-0 focus-visible:ring-primary"
         placeholder="Enter course title"
       />
     </div>
     
     <div className="space-y-2">
-      <div className="text-sm text-gray-600 dark:text-gray-400">Description</div>
+      <Label htmlFor={`course-desc-${index}`} className="text-sm font-medium text-gray-700 dark:text-gray-300">
+        Description
+      </Label>
       <Textarea
         id={`course-desc-${index}`}
         value={course.description}
         onChange={(e) => onChange(index, 'description', e.target.value)}
-        className="min-h-24 text-sm border-0 shadow-none bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 px-0 resize-none"
+        className="min-h-24 text-sm border border-gray-300 dark:border-gray-700 focus-visible:ring-2 focus-visible:ring-offset-0 focus-visible:ring-primary resize-vertical"
         placeholder="Enter course description"
       />
     </div>
@@ -107,7 +111,7 @@ export default function CourseDialog({
         <DialogHeader className="pb-2">
           <DialogTitle className="text-2xl font-bold">Customize Your Courses</DialogTitle>
           <DialogDescription className="text-base text-gray-600 dark:text-gray-300">
-            We've generated these course suggestions based on your profession. Feel free to edit them to better match your needs.
+            We've generated these course suggestions based on your profession. Edit the titles and descriptions below to better match your specific learning needs.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>

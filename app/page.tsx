@@ -142,6 +142,7 @@ export default function Home() {
   const [profession, setProfession] = useState<string | null>(null);
   const [courses, setCourses] = useState<Course[]>([]);
   const [isLoadingCourses, setIsLoadingCourses] = useState(false);
+  const [selectedCourses, setSelectedCourses] = useState<Course[]>([]);
 
   const handleGetStarted = () => {
     setProfessionDialogOpen(true);
@@ -166,8 +167,9 @@ export default function Home() {
   };
 
   const handleCoursesSubmit = (editedCourses: Course[]) => {
-    // In the future, we would save these courses to a database
-    console.log('Courses submitted:', editedCourses);
+    // Save the edited courses to state
+    setSelectedCourses(editedCourses);
+    console.log('Courses submitted with edits:', editedCourses);
     
     // Navigate to next step in the course creation flow
     window.location.href = "/course";
