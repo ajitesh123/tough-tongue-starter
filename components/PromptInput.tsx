@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useCompletion } from '../utils/chat_completions';
+import { useCompletion } from '../app/utils/chat_completions';
 
 export default function PromptInput() {
   const {

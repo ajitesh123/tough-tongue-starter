@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import PromptInput from '@/app/components/PromptInput';
+import PromptInput from '@/components/PromptInput';
 
 export default function TestPage() {
   return (
