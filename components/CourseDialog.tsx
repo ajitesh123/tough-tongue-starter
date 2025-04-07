@@ -31,9 +31,10 @@ interface CourseDialogProps {
 
 // Loading indicator component
 const LoadingIndicator = () => (
-  <div className="flex flex-col items-center justify-center p-8">
-    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 dark:border-gray-100"></div>
-    <p className="mt-4 text-sm text-gray-600 dark:text-gray-300">Generating course suggestions...</p>
+  <div className="flex flex-col items-center justify-center p-8 my-4">
+    <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary"></div>
+    <p className="mt-6 text-base text-gray-600 dark:text-gray-300 font-medium">Generating course suggestions...</p>
+    <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">This may take a few moments</p>
   </div>
 );
 
@@ -45,33 +46,29 @@ interface CourseCardProps {
 }
 
 const CourseCard = ({ course, index, onChange }: CourseCardProps) => (
-  <Card key={course.id} className="shadow-sm border-[0.5px] border-black/30 overflow-hidden">
-    <div className="p-1">
-      <div className="mb-0.5">
-        <Label htmlFor={`course-title-${index}`} className="text-xs text-gray-500 mb-0">Course Title</Label>
-        <Input
-          id={`course-title-${index}`}
-          value={course.title}
-          onChange={(e) => onChange(index, 'title', e.target.value)}
-          className="font-medium text-xs h-6 border-none p-0 focus-visible:ring-0 focus-visible:ring-offset-0 w-full"
-        />
-      </div>
-      <div>
-        <Label htmlFor={`course-desc-${index}`} className="text-xs text-gray-500 mb-0">Description</Label>
-        <div className="text-xs max-w-full min-h-[40px] break-words overflow-hidden">
-          {course.description.split(' ').map((word, i) => (
-            <span key={i} className="break-all inline-block max-w-full pr-1">{word}</span>
-          ))}
-          <Input
-            id={`course-desc-${index}`}
-            value={course.description}
-            onChange={(e) => onChange(index, 'description', e.target.value)}
-            className="text-xs w-full max-w-full border-none p-0 focus-visible:ring-0 focus-visible:ring-offset-0 opacity-0 h-0 absolute"
-          />
-        </div>
-      </div>
+  <div className="bg-white dark:bg-black border border-black/30 dark:border-white/20 rounded-lg p-6 space-y-4">
+    <div className="space-y-2">
+      <div className="text-sm text-gray-600 dark:text-gray-400">Course Title</div>
+      <Input
+        id={`course-title-${index}`}
+        value={course.title}
+        onChange={(e) => onChange(index, 'title', e.target.value)}
+        className="font-medium text-base border-0 shadow-none bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 px-0 h-auto"
+        placeholder="Enter course title"
+      />
     </div>
-  </Card>
+    
+    <div className="space-y-2">
+      <div className="text-sm text-gray-600 dark:text-gray-400">Description</div>
+      <Textarea
+        id={`course-desc-${index}`}
+        value={course.description}
+        onChange={(e) => onChange(index, 'description', e.target.value)}
+        className="min-h-24 text-sm border-0 shadow-none bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 px-0 resize-none"
+        placeholder="Enter course description"
+      />
+    </div>
+  </div>
 );
 
 // Main component
@@ -106,15 +103,15 @@ export default function CourseDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-xl max-h-[90vh] overflow-y-auto border border-black/30">
-        <DialogHeader className="pb-1">
-          <DialogTitle className="mt-2">Customize Your Courses</DialogTitle>
-          <DialogDescription className="text-sm">
+      <DialogContent className="sm:max-w-xl max-h-[90vh] overflow-y-auto border border-black/10 dark:border-white/20">
+        <DialogHeader className="pb-2">
+          <DialogTitle className="text-2xl font-bold">Customize Your Courses</DialogTitle>
+          <DialogDescription className="text-base text-gray-600 dark:text-gray-300">
             We've generated these course suggestions based on your profession. Feel free to edit them to better match your needs.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
-          <div className="grid gap-1.5 py-1">
+          <div className="grid gap-4 py-2">
             {isLoading ? (
               <LoadingIndicator />
             ) : (
@@ -128,8 +125,9 @@ export default function CourseDialog({
               ))
             )}
           </div>
-          <DialogFooter className="pt-1">
-            <Button type="submit" disabled={isLoading} size="sm">Continue</Button>
+          <DialogFooter className="pt-4 flex justify-end gap-2">
+            <Button variant="outline" onClick={() => onOpenChange(false)} size="lg" className="rounded-full">Cancel</Button>
+            <Button type="submit" disabled={isLoading} size="lg" className="rounded-full">Continue</Button>
           </DialogFooter>
         </form>
       </DialogContent>
