@@ -8,9 +8,9 @@ import { FeatureCard } from "../components/FeatureCard";
 const Header = () => {
   return (
     <>
-      <h1 className="text-4xl font-bold">AI-First Professional Coaching</h1>
+      <h1 className="text-4xl font-bold">Personalized AI Coaching Platform</h1>
       <p className="text-xl text-center sm:text-left max-w-2xl">
-        Master new skills with interactive voice-based learning powered by Tough Tongue AI
+        Create custom professional training scenarios tailored to your career needs with Tough Tongue AI
       </p>
     </>
   );
@@ -21,18 +21,18 @@ const BenefitsGrid = () => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-4xl">
       <FeatureCard 
-        title="Interactive Learning" 
-        description="Practice conversations with AI tutors that adapt to your learning pace" 
+        title="Personalized Scenarios" 
+        description="AI-generated training content based on your profession and needs" 
         icon={MessageSquare} 
       />
       <FeatureCard 
-        title="Real-time Feedback" 
-        description="Receive instant feedback on your responses and communication style" 
+        title="Interactive Practice" 
+        description="Engage with AI tutors that provide real-time feedback on your responses" 
         icon={Sparkles} 
       />
       <FeatureCard 
-        title="Flexible Schedule" 
-        description="Learn anytime, anywhere with 24/7 access to practice sessions" 
+        title="On-Demand Learning" 
+        description="Access your custom training scenarios anytime, anywhere" 
         icon={Clock} 
       />
     </div>
@@ -43,24 +43,24 @@ const BenefitsGrid = () => {
 const CourseModules = () => {
   return (
     <div className="w-full max-w-4xl">
-      <h2 className="text-2xl font-semibold mb-4">Course Modules</h2>
+      <h2 className="text-2xl font-semibold mb-4">How It Works</h2>
       <div className="space-y-4">
         <Card className="p-0">
           <CardContent className="p-4">
-            <h3 className="text-lg font-medium">Module 1: [Module Name]</h3>
-            <p className="text-gray-600 dark:text-gray-300">Brief description of this module and what students will learn.</p>
+            <h3 className="text-lg font-medium">Step 1: Tell Us About Yourself</h3>
+            <p className="text-gray-600 dark:text-gray-300">Enter your name and profession to help us create relevant training scenarios.</p>
           </CardContent>
         </Card>
         <Card className="p-0">
           <CardContent className="p-4">
-            <h3 className="text-lg font-medium">Module 2: [Module Name]</h3>
-            <p className="text-gray-600 dark:text-gray-300">Brief description of this module and what students will learn.</p>
+            <h3 className="text-lg font-medium">Step 2: Customize Your Courses</h3>
+            <p className="text-gray-600 dark:text-gray-300">Review and edit AI-generated course suggestions to match your specific needs.</p>
           </CardContent>
         </Card>
         <Card className="p-0">
           <CardContent className="p-4">
-            <h3 className="text-lg font-medium">Module 3: [Module Name]</h3>
-            <p className="text-gray-600 dark:text-gray-300">Brief description of this module and what students will learn.</p>
+            <h3 className="text-lg font-medium">Step 3: Practice and Improve</h3>
+            <p className="text-gray-600 dark:text-gray-300">Engage with interactive voice scenarios designed to build your professional skills.</p>
           </CardContent>
         </Card>
       </div>
@@ -77,14 +77,14 @@ const CTAButtons = () => {
         asChild 
         className="rounded-full bg-foreground text-background hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
       >
-        <a href="/course">Enroll Now</a>
+        <a href="/course">Create Your Scenarios</a>
       </Button>
       <Button 
         variant="outline" 
         asChild 
         className="rounded-full border-black/[.08] dark:border-white/[.145] hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto"
       >
-        <a href="/course">Get Started</a>
+        <a href="/course">Learn More</a>
       </Button>
     </div>
   );
