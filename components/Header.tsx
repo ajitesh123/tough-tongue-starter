@@ -13,7 +13,7 @@ export default function Header() {
         <div className="grid grid-cols-3 items-center">
           <div className="flex items-center">
             <Link href="/" className="text-xl font-bold">
-              Tough Tongue AI
+              Drona AI
             </Link>
           </div>
           <nav className="flex items-center justify-center space-x-6">

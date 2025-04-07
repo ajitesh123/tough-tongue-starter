@@ -8,7 +8,7 @@ import { FeatureCard } from "../components/FeatureCard";
 const Header = () => {
   return (
     <>
-      <h1 className="text-4xl font-bold">[Course Name]</h1>
+      <h1 className="text-4xl font-bold">AI-First Professional Coaching</h1>
       <p className="text-xl text-center sm:text-left max-w-2xl">
         Master new skills with interactive voice-based learning powered by Tough Tongue AI
       </p>
