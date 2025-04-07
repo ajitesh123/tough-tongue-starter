@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { getToughTongueEmbedUrl } from '@/app/utils/tough-tongue';
 
 export default function ToughTonguePage() {
   const [formData, setFormData] = useState({
@@ -126,6 +127,21 @@ export default function ToughTonguePage() {
           <pre className="p-4 bg-gray-100 rounded-md overflow-auto">
             {JSON.stringify(response, null, 2)}
           </pre>
+          
+          {response.id && (
+            <div className="mt-4">
+              <h3 className="text-lg font-semibold mb-2">Embed URL:</h3>
+              <div className="p-4 bg-gray-100 rounded-md break-all">
+                {getToughTongueEmbedUrl(response.id)}
+              </div>
+              <button
+                onClick={() => navigator.clipboard.writeText(getToughTongueEmbedUrl(response.id))}
+                className="mt-2 px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+              >
+                Copy URL
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>
