@@ -31,10 +31,11 @@ export default function ProfessionDialog({
   const router = useRouter();
 
   useEffect(() => {
-    if (isLoaded && !user) {
+    // Only redirect to sign-in if the dialog is open and user is not logged in
+    if (open && isLoaded && !user) {
       router.push("/sign-in");
     }
-  }, [isLoaded, user, router]);
+  }, [isLoaded, user, router, open]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

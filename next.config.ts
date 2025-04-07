@@ -3,12 +3,14 @@ import type { NextConfig } from "next";
 // Properly formatted Content Security Policy
 const ContentSecurityPolicy = `
   default-src 'self';
-  script-src 'self' 'unsafe-eval' 'unsafe-inline' *.clerk.accounts.dev;
+  script-src 'self' 'unsafe-eval' 'unsafe-inline' *.clerk.accounts.dev *.cloudflare.com;
   style-src 'self' 'unsafe-inline';
   img-src * blob: data:;
   connect-src *;
   font-src 'self';
-  frame-src app.toughtongueai.com *.clerk.accounts.dev
+  frame-src app.toughtongueai.com *.clerk.accounts.dev *.cloudflare.com challenges.cloudflare.com;
+  worker-src 'self' blob:;
+  script-src-elem 'self' 'unsafe-inline' *.clerk.accounts.dev *.cloudflare.com;
 `
 
 const nextConfig: NextConfig = {
