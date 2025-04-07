@@ -34,11 +34,19 @@ interface CourseDialogProps {
 }
 
 // Loading indicator component
-const LoadingIndicator = () => (
+const LoadingIndicator = ({ isLoading, processingScenarios, processingProgress }: { 
+  isLoading: boolean; 
+  processingScenarios: boolean; 
+  processingProgress: number;
+}) => (
   <div className="flex flex-col items-center justify-center p-8 my-4">
     <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary"></div>
-    <p className="mt-6 text-base text-gray-600 dark:text-gray-300 font-medium">Generating course suggestions...</p>
-    <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">This may take a few moments</p>
+    <p className="mt-6 text-base text-gray-600 dark:text-gray-300 font-medium">
+      {isLoading ? 'Generating course suggestions...' : `Processing courses (${processingProgress}%)...`}
+    </p>
+    <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+      {isLoading ? 'This may take a few moments' : 'Creating interactive scenarios for your courses'}
+    </p>
   </div>
 );
 
@@ -77,6 +85,66 @@ const CourseCard = ({ course, index, onChange }: CourseCardProps) => (
       />
     </div>
   </div>
+);
+
+// Dialog header component
+const DialogHeaderContent = () => (
+  <DialogHeader className="pb-2">
+    <DialogTitle className="text-2xl font-bold">Customize Your Courses</DialogTitle>
+    <DialogDescription className="text-base text-gray-600 dark:text-gray-300">
+      We've generated these course suggestions based on your profession. Edit the titles and descriptions below to better match your specific learning needs.
+    </DialogDescription>
+  </DialogHeader>
+);
+
+// Course list component
+interface CourseListProps {
+  isLoading: boolean;
+  processingScenarios: boolean;
+  processingProgress: number;
+  editedCourses: Course[];
+  handleCourseChange: (index: number, field: 'title' | 'description', value: string) => void;
+}
+
+const CourseList = ({ 
+  isLoading, 
+  processingScenarios, 
+  processingProgress, 
+  editedCourses, 
+  handleCourseChange 
+}: CourseListProps) => (
+  <div className="grid gap-4 py-2">
+    {isLoading || processingScenarios ? (
+      <LoadingIndicator 
+        isLoading={isLoading} 
+        processingScenarios={processingScenarios} 
+        processingProgress={processingProgress} 
+      />
+    ) : (
+      editedCourses.map((course, index) => (
+        <CourseCard 
+          key={course.id}
+          course={course} 
+          index={index} 
+          onChange={handleCourseChange} 
+        />
+      ))
+    )}
+  </div>
+);
+
+// Dialog footer component
+interface DialogActionsProps {
+  isLoading: boolean;
+  processingScenarios: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+const DialogActions = ({ isLoading, processingScenarios, onOpenChange }: DialogActionsProps) => (
+  <DialogFooter className="pt-4 flex justify-end gap-2">
+    <Button variant="outline" onClick={() => onOpenChange(false)} size="lg" className="rounded-full">Cancel</Button>
+    <Button type="submit" disabled={isLoading || processingScenarios} size="lg" className="rounded-full">Continue</Button>
+  </DialogFooter>
 );
 
 // Main component
@@ -155,39 +223,20 @@ export default function CourseDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-xl max-h-[90vh] overflow-y-auto border border-black/10 dark:border-white/20">
-        <DialogHeader className="pb-2">
-          <DialogTitle className="text-2xl font-bold">Customize Your Courses</DialogTitle>
-          <DialogDescription className="text-base text-gray-600 dark:text-gray-300">
-            We've generated these course suggestions based on your profession. Edit the titles and descriptions below to better match your specific learning needs.
-          </DialogDescription>
-        </DialogHeader>
+        <DialogHeaderContent />
         <form onSubmit={handleSubmit}>
-          <div className="grid gap-4 py-2">
-            {isLoading || processingScenarios ? (
-              <div className="flex flex-col items-center justify-center p-8 my-4">
-                <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary"></div>
-                <p className="mt-6 text-base text-gray-600 dark:text-gray-300 font-medium">
-                  {isLoading ? 'Generating course suggestions...' : `Processing courses (${processingProgress}%)...`}
-                </p>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                  {isLoading ? 'This may take a few moments' : 'Creating interactive scenarios for your courses'}
-                </p>
-              </div>
-            ) : (
-              editedCourses.map((course, index) => (
-                <CourseCard 
-                  key={course.id}
-                  course={course} 
-                  index={index} 
-                  onChange={handleCourseChange} 
-                />
-              ))
-            )}
-          </div>
-          <DialogFooter className="pt-4 flex justify-end gap-2">
-            <Button variant="outline" onClick={() => onOpenChange(false)} size="lg" className="rounded-full">Cancel</Button>
-            <Button type="submit" disabled={isLoading || processingScenarios} size="lg" className="rounded-full">Continue</Button>
-          </DialogFooter>
+          <CourseList
+            isLoading={isLoading}
+            processingScenarios={processingScenarios}
+            processingProgress={processingProgress}
+            editedCourses={editedCourses}
+            handleCourseChange={handleCourseChange}
+          />
+          <DialogActions 
+            isLoading={isLoading} 
+            processingScenarios={processingScenarios}
+            onOpenChange={onOpenChange}
+          />
         </form>
       </DialogContent>
     </Dialog>

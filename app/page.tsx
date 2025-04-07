@@ -14,12 +14,12 @@ import { fetchCourseSuggestions } from "@/app/utils/courses";
 // Header component
 const Header = () => {
   return (
-    <>
-      <h1 className="text-4xl font-bold">Personalized AI Coaching Platform</h1>
-      <p className="text-xl text-center sm:text-left max-w-2xl">
-        Create custom professional training scenarios tailored to your career needs with Tough Tongue AI
+    <div className="w-full max-w-4xl flex flex-col gap-3 mb-8">
+      <h1 className="text-4xl md:text-5xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">AI-first coaching Platform</h1>
+      <p className="text-xl text-muted-foreground max-w-2xl">
+        Create professional coaching scenarios tailored to your career with Tough Tongue AI
       </p>
-    </>
+    </div>
   );
 };
 
@@ -176,8 +176,9 @@ export default function Home() {
   };
 
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-4 pb-12 gap-4 sm:p-12 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-6 row-start-2 items-center sm:items-start">
+    <div className="flex flex-col items-center justify-center min-h-screen px-4 py-8 md:py-12 gap-4 font-[family-name:var(--font-geist-sans)]">
+      <main className="flex flex-col gap-6 items-center sm:items-start w-full max-w-4xl">
+        <Header />
         <CourseModules />
         <CTAButtons onGetStarted={handleGetStarted} />
       </main>
