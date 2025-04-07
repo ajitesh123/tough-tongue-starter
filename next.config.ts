@@ -3,12 +3,12 @@ import type { NextConfig } from "next";
 // Properly formatted Content Security Policy
 const ContentSecurityPolicy = `
   default-src 'self';
-  script-src 'self' 'unsafe-eval' 'unsafe-inline';
+  script-src 'self' 'unsafe-eval' 'unsafe-inline' *.clerk.accounts.dev;
   style-src 'self' 'unsafe-inline';
   img-src * blob: data:;
   connect-src *;
   font-src 'self';
-  frame-src app.toughtongueai.com
+  frame-src app.toughtongueai.com *.clerk.accounts.dev
 `
 
 const nextConfig: NextConfig = {
